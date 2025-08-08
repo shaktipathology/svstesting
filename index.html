@@ -31,6 +31,7 @@
             background-color: rgba(31, 41, 55, 0.8); /* gray-800 with opacity */
             color: white;
             border: 1px solid rgba(75, 85, 99, 0.8); /* gray-600 with opacity */
+            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
         }
         .custom-control:hover {
             background-color: rgba(55, 65, 81, 0.9); /* gray-700 with opacity */
@@ -83,6 +84,10 @@
             <button id="home-btn" class="custom-control rounded-full p-3 font-semibold transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             </button>
+            <!-- New Resolution Buttons -->
+            <button id="zoom-4x-btn" class="custom-control rounded-full py-3 px-5 font-semibold transition text-sm">4x</button>
+            <button id="zoom-10x-btn" class="custom-control rounded-full py-3 px-5 font-semibold transition text-sm">10x</button>
+            <button id="zoom-40x-btn" class="custom-control rounded-full py-3 px-5 font-semibold transition text-sm">40x</button>
         </div>
     </div>
 
@@ -95,6 +100,9 @@
         const zoomInBtn = document.getElementById('zoom-in-btn');
         const zoomOutBtn = document.getElementById('zoom-out-btn');
         const homeBtn = document.getElementById('home-btn');
+        const zoom4xBtn = document.getElementById('zoom-4x-btn');
+        const zoom10xBtn = document.getElementById('zoom-10x-btn');
+        const zoom40xBtn = document.getElementById('zoom-40x-btn');
 
         // --- SLIDE DATA ---
         const slides = [
@@ -127,11 +135,24 @@
                 showHomeControl: false,
                 showFullPageControl: false,
                 showRotationControl: false,
+                // Disable double-click zoom on the container, we'll handle it on the canvas
+                dblClickToZoom: false,
                 // Configure navigator
                 showNavigator: true,
                 navigatorPosition: "BOTTOM_RIGHT",
                 navigatorBackground: '#374151', // gray-700
                 navigatorBorderColor: '#4b5563', // gray-600
+            });
+
+            // Re-implement double-click-to-zoom only on the canvas itself
+            viewer.addHandler('canvas-click', function(event) {
+                if (event.quick) { // This indicates a double-click
+                    viewer.viewport.zoomBy(
+                        viewer.zoomPerClick, // Use the default zoom factor
+                        viewer.viewport.pointFromPixel(event.position)
+                    );
+                    viewer.viewport.applyConstraints();
+                }
             });
         }
         
@@ -173,6 +194,34 @@
         homeBtn.addEventListener('click', () => {
             if (viewer) viewer.viewport.goHome();
         });
+
+        // --- Resolution Button Logic ---
+        function setZoomLevel(level) {
+            if (!viewer) return;
+
+            const homeZoom = viewer.viewport.getHomeZoom();
+            const maxZoom = viewer.viewport.getMaxZoom();
+            let targetZoom;
+
+            switch(level) {
+                case 4:
+                    targetZoom = homeZoom + (maxZoom - homeZoom) * 0.1;
+                    break;
+                case 10:
+                    targetZoom = homeZoom + (maxZoom - homeZoom) * 0.25;
+                    break;
+                case 40:
+                    targetZoom = maxZoom;
+                    break;
+                default:
+                    return;
+            }
+            viewer.viewport.zoomTo(targetZoom);
+        }
+
+        zoom4xBtn.addEventListener('click', () => setZoomLevel(4));
+        zoom10xBtn.addEventListener('click', () => setZoomLevel(10));
+        zoom40xBtn.addEventListener('click', () => setZoomLevel(40));
 
     </script>
 
