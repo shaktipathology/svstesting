@@ -26,12 +26,16 @@
             height: 100%;
             background-color: #000;
         }
-        /* Custom styles for the viewer controls to ensure they are visible on a dark background */
+        /* Custom styles for the viewer controls */
         .custom-control {
             background-color: rgba(31, 41, 55, 0.8); /* gray-800 with opacity */
             color: white;
             border: 1px solid rgba(75, 85, 99, 0.8); /* gray-600 with opacity */
             -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+            
+            /* --- FIX: Prevents browser double-tap zoom on buttons --- */
+            touch-action: manipulation; 
+            user-select: none; /* Prevents text selection on tap */
         }
         .custom-control:hover {
             background-color: rgba(55, 65, 81, 0.9); /* gray-700 with opacity */
